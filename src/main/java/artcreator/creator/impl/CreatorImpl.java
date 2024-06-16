@@ -1,6 +1,7 @@
 package artcreator.creator.impl;
 
 import artcreator.creator.port.Creator;
+import artcreator.domain.AllProfiles;
 import artcreator.domain.Image;
 import artcreator.domain.Profile;
 import artcreator.domain.Template;
@@ -58,9 +59,15 @@ public class CreatorImpl implements Creator {
 	}
 
 	@Override
-	public Profile loadProfile(int ID) {
-		// Implementation for processing the image
-		return new Profile();
+	public Profile loadProfile(int id) {
+		// Load profile from AllProfiles using the provided id
+		Profile profile = AllProfiles.getProfile(id);
+		if (profile != null) {
+			System.out.println("Profile loaded: " + profile);
+		} else {
+			System.out.println("Profile with ID " + id + " not found.");
+		}
+		return profile;
 	}
 
 	@Override
