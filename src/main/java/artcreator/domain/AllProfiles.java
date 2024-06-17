@@ -8,9 +8,9 @@ public class AllProfiles {
 
     static {
         // Mock-Data -> Muss über Use Case "Profil erstellen" dynamisch gespeichert werden
-        allProfiles.put(0, new Profile("3:2", 256, "20", 60, 40));
-        allProfiles.put(1, new Profile("16:9", 16, "17", 60, 34));
-        allProfiles.put(2, new Profile("1:1", 256, "12", 60, 60));
+        allProfiles.put(0, new Profile("3:2", 144, 225, 60, 40));
+        allProfiles.put(1, new Profile("16:9", 16, 16, 60, 34));
+        allProfiles.put(2, new Profile("1:1", 256, 16, 60, 60));
     }
 
     public static Profile getProfile(int id) {

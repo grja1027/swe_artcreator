@@ -3,11 +3,11 @@ package artcreator.domain;
 public class Profile {
     private String format; // Bildformat
     private int colors; // Farbtiefe
-    private String resolution; // Auflösung, wieviele Pixel durch eine Bügelperle dargestellt werden
+    private int resolution; // Auflösung, wieviele Pixel durch eine Bügelperle dargestellt werden
     private int width; // Anzahl Bügelperlen in der Breite, max. 60 Stk.
     private int height; // Anzahl Bügelperlen in der Höhe, max. 60 Stk.
 
-    public Profile(String format, int colors, String resolution, int width, int height) {
+    public Profile(String format, int colors, int resolution, int width, int height) {
         this.format = format;
         this.colors = colors;
         this.resolution = resolution;
@@ -32,11 +32,11 @@ public class Profile {
         this.colors = colors;
     }
 
-    public String getResolution() {
+    public int getResolution() {
         return resolution;
     }
 
-    public void setResolution(String resolution) {
+    public void setResolution(int resolution) {
         this.resolution = resolution;
     }
 

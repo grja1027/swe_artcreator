@@ -32,6 +32,7 @@ public class CreatorFrame extends JFrame implements Observer {
     private JPanel topPanel = new JPanel();
     private JPanel bottomPanel = new JPanel();
     private JLabel imageLabel = new JLabel();
+    private JLabel templateLabel = new JLabel();
     private JLabel formatLabel = new JLabel();
     private JPanel profilePanel = new JPanel(new GridBagLayout());
 
@@ -57,6 +58,7 @@ public class CreatorFrame extends JFrame implements Observer {
         this.continueBtn.setForeground(new Color(0, 133, 227));
     }
 
+    // Updates the View according to state
     public void update(State newState) {
         if (newState == S.LOAD_IMAGE) {
             // Logic to update the view when IMAGE_LOADED state is reached
@@ -82,7 +84,7 @@ public class CreatorFrame extends JFrame implements Observer {
         this.getContentPane().add(imageLabel, BorderLayout.CENTER); // add imageview to GUI
 
         BufferedImage bufferedImage = image.getBufferedImage();
-        BufferedImage scaledImage = new BufferedImage(600, 400, bufferedImage.getType());
+        BufferedImage scaledImage = new BufferedImage(600, 400, bufferedImage.getType()); //ToDo: müsste aus Profil geladen werden
 
         Graphics2D g2d = scaledImage.createGraphics();
         g2d.drawImage(bufferedImage, 0, 0, 600, 400, null);
@@ -155,6 +157,21 @@ public class CreatorFrame extends JFrame implements Observer {
     }
 
     public void displayTemplate(Template template) {
+        this.getContentPane().add(templateLabel, BorderLayout.CENTER);
+        this.profilePanel.setVisible(false);
+
+        BufferedImage bufferedImage = template.getTemplateImage();
+        BufferedImage scaledImage = new BufferedImage(600, 400, bufferedImage.getType()); //ToDo: müsste aus Profil geladen werden
+
+        Graphics2D g2d = scaledImage.createGraphics();
+        g2d.drawImage(bufferedImage, 0, 0, 600, 400, null);
+        g2d.dispose();
+
+        ImageIcon imageIcon = new ImageIcon(scaledImage);
+        templateLabel.setIcon(imageIcon);
+
+        this.revalidate();
+        this.repaint();
     }
 }
 
