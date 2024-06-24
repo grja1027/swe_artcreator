@@ -3,14 +3,14 @@ package artcreator.gui;
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.sql.Time;
 
 import artcreator.creator.CreatorFactory;
 import artcreator.creator.port.Creator;
-import artcreator.domain.FontEnum;
+import artcreator.domain.*;
 import artcreator.domain.Image;
-import artcreator.domain.Profile;
-import artcreator.domain.Template;
 import artcreator.statemachine.StateMachineFactory;
 import artcreator.statemachine.port.Observer;
 import artcreator.statemachine.port.State;
@@ -34,6 +34,7 @@ public class CreatorFrame extends JFrame implements Observer {
     private JLabel imageLabel = new JLabel();
     private JLabel templateLabel = new JLabel();
     private JLabel formatLabel = new JLabel();
+    private JLabel infoLabel = new JLabel();
     private JPanel profilePanel = new JPanel(new GridBagLayout());
 
     public CreatorFrame() {
@@ -53,6 +54,10 @@ public class CreatorFrame extends JFrame implements Observer {
         this.editProfileBtn.addActionListener(this.controller);
         this.topPanel.add(this.btn);
         this.getContentPane().add(topPanel, BorderLayout.NORTH);
+
+        this.infoLabel = new JLabel("This button is not implemented.");
+        this.infoLabel.setForeground(Color.RED);
+        this.infoLabel.setVisible(false); // Initially hidden
 
         // Style the continue & generate template button
         this.continueBtn.setForeground(new Color(0, 133, 227));
@@ -84,10 +89,10 @@ public class CreatorFrame extends JFrame implements Observer {
         this.getContentPane().add(imageLabel, BorderLayout.CENTER); // add imageview to GUI
 
         BufferedImage bufferedImage = image.getBufferedImage();
-        BufferedImage scaledImage = new BufferedImage(600, 400, bufferedImage.getType()); //ToDo: müsste aus Profil geladen werden
+        BufferedImage scaledImage = new BufferedImage(600, 300, bufferedImage.getType()); //ToDo: müsste aus Profil geladen werden
 
         Graphics2D g2d = scaledImage.createGraphics();
-        g2d.drawImage(bufferedImage, 0, 0, 600, 400, null);
+        g2d.drawImage(bufferedImage, 0, 0, 600, 300, null);
         g2d.dispose();
 
         // Button Adjustments
@@ -97,7 +102,7 @@ public class CreatorFrame extends JFrame implements Observer {
         imageLabel.setIcon(imageIcon);
 
         // Label to show current format
-        String format = "3:2"; // Has to be dynamic, not hard-coded
+        String format = AllProfiles.getProfile(0).getFormat();
         String formatText = String.format("Format according to profile: %s", format);
         formatLabel.setText(formatText);
         formatLabel.setHorizontalAlignment(JLabel.LEFT);
@@ -105,6 +110,14 @@ public class CreatorFrame extends JFrame implements Observer {
 
         this.revalidate();
         this.repaint();
+    }
+
+    public void showEditProfileInfoMessage() {
+        infoLabel.setVisible(true);
+    }
+
+    public void hideEditProfileInfoMessage() {
+        infoLabel.setVisible(false);
     }
 
     public void displayProfile(Profile profile) {
@@ -161,10 +174,10 @@ public class CreatorFrame extends JFrame implements Observer {
         this.profilePanel.setVisible(false);
 
         BufferedImage bufferedImage = template.getTemplateImage();
-        BufferedImage scaledImage = new BufferedImage(600, 400, bufferedImage.getType()); //ToDo: müsste aus Profil geladen werden
+        BufferedImage scaledImage = new BufferedImage(600, 300, bufferedImage.getType()); //ToDo: müsste aus Profil geladen werden
 
         Graphics2D g2d = scaledImage.createGraphics();
-        g2d.drawImage(bufferedImage, 0, 0, 600, 400, null);
+        g2d.drawImage(bufferedImage, 0, 0, 600, 300, null);
         g2d.dispose();
 
         ImageIcon imageIcon = new ImageIcon(scaledImage);

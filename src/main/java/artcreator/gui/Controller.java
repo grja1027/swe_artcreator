@@ -44,7 +44,7 @@ public class Controller implements ActionListener, Observer {
                 if (currentImage != null) {
                     System.out.println("Image loaded successfully.");
                     subject.setState(State.S.IMAGE_LOADED); // Change state to IMAGE_LOADED
-                    myView.update(subject.getState()); // Updates view regarding to the new State
+                    myView.update(subject.getState()); // Updates view according to the new State
                 } else {
                     System.out.println("No image selected or failed to load the image.");
                 }
@@ -57,7 +57,7 @@ public class Controller implements ActionListener, Observer {
                 if (currentProfile != null) {
                     System.out.println("Profile loaded successfully.");
                     subject.setState(State.S.PROFILE_LOADED); // Change state to PROFILE_LOADED
-                    myView.update(State.S.PROFILE_LOADED); // Updates view regarding to the new State
+                    myView.update(State.S.PROFILE_LOADED); // Updates view according to the new State
                 } else {
                     System.out.println("No profile selected or failed to load the profile.");
                 }
@@ -69,10 +69,16 @@ public class Controller implements ActionListener, Observer {
                 if (currentTemplate != null) {
                     System.out.println("Template generated successfully.");
                     subject.setState(State.S.TEMPLATE_GENERATED); // Change state to TEMPLATE_GENERATED
-                    myView.update(State.S.TEMPLATE_GENERATED); // Updates view regarding to the new State
+                    myView.update(State.S.TEMPLATE_GENERATED); // Updates view according to the new State
                 } else {
                     System.out.println("Failed to generate template.");
                 }
+                break;
+
+            case "EDIT_PROFILE":
+                // Use-case "Profil erstellen", show info message that use-case is not implemented
+                myView.showEditProfileInfoMessage();
+
                 break;
         }
     }
