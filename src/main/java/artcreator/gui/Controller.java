@@ -1,31 +1,21 @@
 package artcreator.gui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.util.concurrent.CompletableFuture;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
 import artcreator.creator.port.Creator;
-import artcreator.domain.Image;
-import artcreator.domain.Profile;
-import artcreator.domain.Template;
 import artcreator.statemachine.port.Observer;
 import artcreator.statemachine.port.State;
 import artcreator.statemachine.port.Subject;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 
 public class Controller implements ActionListener, Observer {
 
     private CreatorFrame myView;
     private Creator myModel;
     private Subject subject;
-
-    public Image currentImage;
-    public Profile currentProfile;
-    public Template currentTemplate;
-
 
     public Controller(CreatorFrame view, Subject subject, Creator model) {
         this.myView = view;
@@ -34,51 +24,88 @@ public class Controller implements ActionListener, Observer {
         this.subject.attach(this);
     }
 
+    // opens a dialog to choose the file/image from file system
+    public File loadImage() {
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Select an Image");
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Image Files", "jpg", "png", "bmp");
+        fileChooser.addChoosableFileFilter(filter);
+
+        int returnValue = fileChooser.showOpenDialog(null); // Pass null for a simple dialog, or pass a reference to the parent component
+
+        if (returnValue == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            String filePath = selectedFile.getAbsolutePath();
+            System.out.println("Selected file: " + filePath);
+            return selectedFile;
+        }
+        return null;
+    }
+
+    // opens a dialog to choose the location where to save the template
+    private String saveTemplate() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Choose the location to save your template");
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                "jpg".toUpperCase() + " Image", "jpg", "png"));
+
+        int userSelection = fileChooser.showSaveDialog(null);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            String filePath = fileToSave.getAbsolutePath();
+
+            // Ensure the file has the correct extension
+            if (!filePath.endsWith("." + "jpg")) {
+                filePath += "." + "jpg";
+            }
+
+            return filePath;
+        }
+
+        return null;
+    }
+
     public synchronized void actionPerformed(ActionEvent e) {
         String actionCommand = e.getActionCommand();
         switch (actionCommand) {
             case "SELECT_IMAGE":
                 // LoadImage Method
-                this.currentImage = myModel.loadImage(null);
-
-                if (currentImage != null) {
-                    System.out.println("Image loaded successfully.");
-                    subject.setState(State.S.IMAGE_LOADED); // Change state to IMAGE_LOADED
-                    myView.update(subject.getState()); // Updates view according to the new State
-                } else {
-                    System.out.println("No image selected or failed to load the image.");
-                }
+                myModel.loadImage(this.loadImage());
+                subject.setState(State.S.IMAGE_LOADED); // Change state to IMAGE_LOADED
+                myView.update(subject.getState());
                 break;
 
             case "CONTINUE_TO_LOAD_PROFILE":
                 // LoadProfile Method
-                this.currentProfile = myModel.loadProfile(0); // always the current profile is loaded, id = 0
-
-                if (currentProfile != null) {
-                    System.out.println("Profile loaded successfully.");
-                    subject.setState(State.S.PROFILE_LOADED); // Change state to PROFILE_LOADED
-                    myView.update(State.S.PROFILE_LOADED); // Updates view according to the new State
-                } else {
-                    System.out.println("No profile selected or failed to load the profile.");
-                }
+                myModel.loadProfile(0); // always the current profile is loaded, id = 0
+                subject.setState(State.S.PROFILE_LOADED); // Change state to PROFILE_LOADED
+                myView.update(State.S.PROFILE_LOADED); // Updates view according to the new State
                 break;
 
             case "GENERATE_TEMPLATE":
                 // GenerateTemplate Method
-                this.currentTemplate = myModel.generateTemplate();
-                if (currentTemplate != null) {
-                    System.out.println("Template generated successfully.");
-                    subject.setState(State.S.TEMPLATE_GENERATED); // Change state to TEMPLATE_GENERATED
-                    myView.update(State.S.TEMPLATE_GENERATED); // Updates view according to the new State
-                } else {
-                    System.out.println("Failed to generate template.");
-                }
+                myModel.generateTemplate();
+                subject.setState(State.S.TEMPLATE_GENERATED); // Change state to TEMPLATE_GENERATED
+                myView.update(State.S.TEMPLATE_GENERATED); // Updates view according to the new State
                 break;
 
             case "EDIT_PROFILE":
                 // Use-case "Profil erstellen", show info message that use-case is not implemented
                 myView.showEditProfileInfoMessage();
+                break;
 
+            case "SAVE_TEMPLATE":
+                // SaveTemplate Method
+                myModel.saveTemplate(saveTemplate());
+                subject.setState(State.S.TEMPLATE_SAVED); // Change state to TEMPLATE_SAVED
+                myView.update(State.S.TEMPLATE_SAVED); // Updates view according to the new State
+                break;
+
+            case "FINISH_TEMPLATE_GENERATION":
+                //use case not implemented
                 break;
         }
     }

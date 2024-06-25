@@ -4,13 +4,18 @@ import artcreator.domain.Profile;
 import artcreator.domain.Template;
 import artcreator.domain.Image;
 
-public interface Creator {
-	Image loadImage(String path);
-	Profile loadProfile(int id);
-	Template generateTemplate();
-	void saveTemplate(String targetPath);
-	boolean confirmTemplateCreation();
+import java.io.File;
 
+public interface Creator {
+	void loadImage(File path);
+	void loadProfile(int id);
+	void generateTemplate();
+	void saveTemplate(String targetPath);
+
+	Image getCurrentImage();
+	Profile getCurrentProfile();
+	Template getCurrentTemplate();
+	boolean getTemplateSaved();
 	void sysop(String str);
 
 }

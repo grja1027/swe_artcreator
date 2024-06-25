@@ -1,18 +1,15 @@
 package artcreator.creator.impl;
 
 import artcreator.creator.port.Creator;
-import artcreator.domain.*;
 import artcreator.domain.Image;
+import artcreator.domain.*;
 import artcreator.domain.port.Domain;
 import artcreator.gui.Controller;
 import artcreator.statemachine.port.StateMachine;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 
@@ -21,8 +18,10 @@ public class CreatorImpl implements Creator {
     private Controller controller;
     private StateMachine stateMachine;
     private Domain domain;
-    public Image currentImage = new Image();
+    public Image currentImage;
     public Profile currentProfile;
+    public Template currentTemplate;
+    public Boolean templateSaved = false;
 
     public CreatorImpl(StateMachine stateMachine, Domain domain) {
         this.stateMachine = stateMachine;
@@ -32,44 +31,28 @@ public class CreatorImpl implements Creator {
     @Override
     public void sysop(String str) {
         System.out.println(str);
-
     }
 
     @Override
-    public Image loadImage(String path) {
+    public void loadImage(File selectedFile) {
 
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Select an Image");
-        fileChooser.setAcceptAllFileFilterUsed(false);
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Image Files", "jpg", "png", "bmp");
-        fileChooser.addChoosableFileFilter(filter);
+        try {
+            BufferedImage bufferedImage = ImageIO.read(selectedFile);
+            Image image = new Image();
+            image.setBufferedImage(bufferedImage);
 
-        int returnValue = fileChooser.showOpenDialog(null); // Pass null for a simple dialog, or pass a reference to the parent component
+            this.currentImage = image;
 
-        if (returnValue == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            String filePath = selectedFile.getAbsolutePath();
-            System.out.println("Selected file: " + filePath);
-
-            try {
-                BufferedImage bufferedImage = ImageIO.read(selectedFile);
-                Image image = new Image();
-                image.setBufferedImage(bufferedImage);
-
-                this.currentImage = image;
-
-                return image;
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return null;
     }
 
     @Override
-    public Profile loadProfile(int id) {
+    public void loadProfile(int id) {
         // Load profile from AllProfiles using the provided id
         Profile profile = AllProfiles.getProfile(id);
+
         if (profile != null) {
             System.out.println("Profile loaded: " + profile);
         } else {
@@ -77,17 +60,14 @@ public class CreatorImpl implements Creator {
         }
 
         this.currentProfile = profile;
-        return profile;
     }
 
     @Override
-    public Template generateTemplate() {
+    public void generateTemplate() {
         Image image = this.currentImage;
-        Profile profile = AllProfiles.getProfile(0);
+        Profile profile = this.currentProfile;
 
         int tileSize = profile.getResolution();
-        int maxWidth = profile.getWidth();
-        int maxHeight = profile.getHeight();
         int numColors = profile.getColors();
 
         Palette palette;
@@ -110,7 +90,7 @@ public class CreatorImpl implements Creator {
             }
         }
 
-        return new Template(mosaicImage);
+        this.currentTemplate = new Template(mosaicImage);
     }
 
     private int getAverageColor(BufferedImage image, int startX, int startY, int size) {
@@ -176,13 +156,37 @@ public class CreatorImpl implements Creator {
 
     @Override
     public void saveTemplate(String targetPath) {
-        // Implementation for saving the generated template
+        try {
+            // convert template to bufferedImage
+            BufferedImage bufferedImage = currentTemplate.getTemplateImage();
+
+            // save as jpg
+            File outputFile = new File(targetPath);
+            ImageIO.write(bufferedImage, "jpg", outputFile);
+            this.templateSaved = true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
-    public boolean confirmTemplateCreation() {
-        // Implementation for confirming the template creation
-        return true;
+    public Image getCurrentImage() {
+        return currentImage;
     }
 
+    @Override
+    public Profile getCurrentProfile() {
+        return currentProfile;
+    }
+
+    @Override
+    public Template getCurrentTemplate() {
+        return currentTemplate;
+    }
+
+    @Override
+    public boolean getTemplateSaved() {
+        return templateSaved;
+    }
 }

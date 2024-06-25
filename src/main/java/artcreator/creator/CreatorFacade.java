@@ -2,10 +2,15 @@ package artcreator.creator;
 
 import artcreator.creator.impl.CreatorImpl;
 import artcreator.creator.port.Creator;
-import artcreator.domain.*;
+import artcreator.domain.DomainFactory;
+import artcreator.domain.Image;
+import artcreator.domain.Profile;
+import artcreator.domain.Template;
 import artcreator.statemachine.StateMachineFactory;
-import artcreator.statemachine.port.StateMachine;
 import artcreator.statemachine.port.State.S;
+import artcreator.statemachine.port.StateMachine;
+
+import java.io.File;
 
 public class CreatorFacade implements CreatorFactory, Creator {
 
@@ -21,30 +26,29 @@ public class CreatorFacade implements CreatorFactory, Creator {
         return this;
     }
 
-
     @Override
-    public Image loadImage(String path) {
+    public void loadImage(File path) {
         if (this.stateMachine.getState().isSubStateOf(S.LOAD_IMAGE) ||
                 this.stateMachine.getState().isSubStateOf(S.IMAGE_LOADED)) {
-            return this.creator.loadImage(path);
+            this.creator.loadImage(path);
         } else {
             throw new IllegalStateException("Invalid state for operation.");
         }
     }
 
     @Override
-    public Profile loadProfile(int id) {
+    public void loadProfile(int id) {
         if (this.stateMachine.getState().isSubStateOf(S.IMAGE_LOADED)) {
-            return this.creator.loadProfile(id);
+            this.creator.loadProfile(id);
         } else {
             throw new IllegalStateException("Invalid state for operation.");
         }
     }
 
     @Override
-    public Template generateTemplate() {
+    public void generateTemplate() {
         if (this.stateMachine.getState().isSubStateOf(S.PROFILE_LOADED)) {
-            return this.creator.generateTemplate();
+            this.creator.generateTemplate();
         } else {
             throw new IllegalStateException("Invalid state for operation.");
         }
@@ -60,17 +64,44 @@ public class CreatorFacade implements CreatorFactory, Creator {
     }
 
     @Override
-    public boolean confirmTemplateCreation() {
-        if (this.stateMachine.getState().isSubStateOf(S.TEMPLATE_SAVED)) {
-            return this.creator.confirmTemplateCreation();
+    public synchronized void sysop(String str) {
+        if (this.stateMachine.getState().isSubStateOf(S.TEMPLATE_GENERATED /* choose right state*/))
+            this.creator.sysop(str);
+    }
+
+    @Override
+    public Image getCurrentImage() {
+        if (this.stateMachine.getState().isSubStateOf(S.IMAGE_LOADED)) {
+            return this.creator.getCurrentImage();
         } else {
             throw new IllegalStateException("Invalid state for operation.");
         }
     }
 
     @Override
-    public synchronized void sysop(String str) {
-        if (this.stateMachine.getState().isSubStateOf(S.TEMPLATE_GENERATED /* choose right state*/))
-            this.creator.sysop(str);
+    public Profile getCurrentProfile() {
+        if (this.stateMachine.getState().isSubStateOf(S.PROFILE_LOADED)) {
+            return this.creator.getCurrentProfile();
+        } else {
+            throw new IllegalStateException("Invalid state for operation.");
+        }
+    }
+
+    @Override
+    public Template getCurrentTemplate() {
+        if (this.stateMachine.getState().isSubStateOf(S.TEMPLATE_GENERATED)) {
+            return this.creator.getCurrentTemplate();
+        } else {
+            throw new IllegalStateException("Invalid state for operation.");
+        }
+    }
+
+    @Override
+    public boolean getTemplateSaved() {
+        if (this.stateMachine.getState().isSubStateOf(S.TEMPLATE_SAVED)) {
+            return this.creator.getTemplateSaved();
+        } else {
+            throw new IllegalStateException("Invalid state for operation.");
+        }
     }
 }

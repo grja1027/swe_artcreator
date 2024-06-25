@@ -9,8 +9,8 @@ public class AllProfiles {
     static {
         // Mock-Data -> Muss über Use Case "Profil erstellen" dynamisch gespeichert werden
         // Resolution = sqrt((widthImage x heightImage) / (width x height))
-        allProfiles.put(0, new Profile("2:1", 16, 11, 60, 30));
-        allProfiles.put(1, new Profile("16:9", 16, 16, 60, 34));
+        allProfiles.put(1, new Profile("3:2", 64, 100, 60, 40)); // ferrari
+        allProfiles.put(0, new Profile("1:2", 16, 24, 30, 60)); // lolli
         allProfiles.put(2, new Profile("1:1", 32, 16, 60, 60));
     }
 

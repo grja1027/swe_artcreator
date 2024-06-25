@@ -1,21 +1,18 @@
 package artcreator.gui;
 
-import javax.swing.*;
-import javax.swing.border.Border;
-import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
-import java.sql.Time;
-
 import artcreator.creator.CreatorFactory;
 import artcreator.creator.port.Creator;
-import artcreator.domain.*;
 import artcreator.domain.Image;
+import artcreator.domain.*;
 import artcreator.statemachine.StateMachineFactory;
 import artcreator.statemachine.port.Observer;
 import artcreator.statemachine.port.State;
-import artcreator.statemachine.port.Subject;
 import artcreator.statemachine.port.State.S;
+import artcreator.statemachine.port.Subject;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class CreatorFrame extends JFrame implements Observer {
 
@@ -23,19 +20,26 @@ public class CreatorFrame extends JFrame implements Observer {
     private Subject subject = StateMachineFactory.FACTORY.subject();
     private Controller controller;
 
-    private static final int WIDTH = 600;
-    private static final int HEIGHT = 500;
-
+    private Profile currentProfile = AllProfiles.getProfile(0);
     private JButton btn = new JButton("Select Image");
     private JButton continueBtn = new JButton("Continue");
     private JButton editProfileBtn = new JButton("Edit Profile");
+
     private JPanel topPanel = new JPanel();
     private JPanel bottomPanel = new JPanel();
+    private JPanel messagePanel = new JPanel();
+    private JPanel profilePanel = new JPanel(new GridBagLayout());
+
     private JLabel imageLabel = new JLabel();
     private JLabel templateLabel = new JLabel();
     private JLabel formatLabel = new JLabel();
     private JLabel infoLabel = new JLabel();
-    private JPanel profilePanel = new JPanel(new GridBagLayout());
+    private JLabel confirmationLabel = new JLabel();
+
+    private static final int MIN_WIDTH = 600;
+    private static final int MIN_HEIGHT = 600;
+    private int WIDTH = Math.max(this.currentProfile.getWidth() * 10 + 100, MIN_WIDTH);
+    private int HEIGHT = Math.max(this.currentProfile.getHeight() * 10 + 100, MIN_HEIGHT);
 
     public CreatorFrame() {
         super("ArtCreator");
@@ -55,8 +59,9 @@ public class CreatorFrame extends JFrame implements Observer {
         this.topPanel.add(this.btn);
         this.getContentPane().add(topPanel, BorderLayout.NORTH);
 
-        this.infoLabel = new JLabel("This button is not implemented.");
+        this.infoLabel = new JLabel("This use-case is not implemented.");
         this.infoLabel.setForeground(Color.RED);
+        this.bottomPanel.add(this.infoLabel, BorderLayout.WEST);
         this.infoLabel.setVisible(false); // Initially hidden
 
         // Style the continue & generate template button
@@ -69,30 +74,55 @@ public class CreatorFrame extends JFrame implements Observer {
             // Logic to update the view when IMAGE_LOADED state is reached
         }
         if (newState == S.IMAGE_LOADED) {
-            this.displayImage(this.controller.currentImage);
+            Image currentImage = creator.getCurrentImage();
+            if (currentImage != null) {
+                System.out.println("Image loaded successfully.");
+                this.displayImage(currentImage);
+            } else {
+                System.out.println("No image selected or failed to load the image.");
+            }
         }
         if (newState == S.PROFILE_LOADED) {
-            this.displayProfile(this.controller.currentProfile);
+            Profile currentProfile = creator.getCurrentProfile();
+            if (currentProfile != null) {
+                System.out.println("Profile loaded successfully.");
+                this.displayProfile(currentProfile);
+            } else {
+                System.out.println("No profile selected or failed to load the profile.");
+            }
         }
         if (newState == S.TEMPLATE_GENERATED) {
-            this.displayTemplate(this.controller.currentTemplate);
+            Template currentTemplate = creator.getCurrentTemplate();
+            if (currentTemplate != null) {
+                System.out.println("Template generated successfully.");
+                this.displayTemplate(currentTemplate);
+            } else {
+                System.out.println("Failed to generate template.");
+            }
         }
         if (newState == S.TEMPLATE_SAVED) {
-            // Logic to update the view when IMAGE_LOADED state is reached
+            if (creator.getTemplateSaved()) {
+                System.out.println("Template saved successfully.");
+                this.showTemplateGeneratedConfirmation();
+            } else {
+                System.out.println("Failed to save template.");
+            }
         }
     }
 
     public void displayImage(Image image) {
+
         this.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
         this.bottomPanel.add(formatLabel); // add formatlabel to GUI
         this.bottomPanel.add(this.continueBtn); // add continue-button to GUI
         this.getContentPane().add(imageLabel, BorderLayout.CENTER); // add imageview to GUI
+        this.imageLabel.setHorizontalAlignment(JLabel.CENTER);
 
         BufferedImage bufferedImage = image.getBufferedImage();
-        BufferedImage scaledImage = new BufferedImage(600, 300, bufferedImage.getType()); //ToDo: müsste aus Profil geladen werden
+        BufferedImage scaledImage = new BufferedImage(this.currentProfile.getWidth() * 10, this.currentProfile.getHeight() * 10, bufferedImage.getType());
 
         Graphics2D g2d = scaledImage.createGraphics();
-        g2d.drawImage(bufferedImage, 0, 0, 600, 300, null);
+        g2d.drawImage(bufferedImage, 0, 0, this.currentProfile.getWidth() * 10, this.currentProfile.getHeight() * 10, null);
         g2d.dispose();
 
         // Button Adjustments
@@ -102,7 +132,7 @@ public class CreatorFrame extends JFrame implements Observer {
         imageLabel.setIcon(imageIcon);
 
         // Label to show current format
-        String format = AllProfiles.getProfile(0).getFormat();
+        String format = this.currentProfile.getFormat();
         String formatText = String.format("Format according to profile: %s", format);
         formatLabel.setText(formatText);
         formatLabel.setHorizontalAlignment(JLabel.LEFT);
@@ -113,11 +143,9 @@ public class CreatorFrame extends JFrame implements Observer {
     }
 
     public void showEditProfileInfoMessage() {
+        getContentPane().add(messagePanel, BorderLayout.SOUTH);
         infoLabel.setVisible(true);
-    }
-
-    public void hideEditProfileInfoMessage() {
-        infoLabel.setVisible(false);
+        this.messagePanel.add(infoLabel, BorderLayout.CENTER);
     }
 
     public void displayProfile(Profile profile) {
@@ -173,18 +201,35 @@ public class CreatorFrame extends JFrame implements Observer {
         this.getContentPane().add(templateLabel, BorderLayout.CENTER);
         this.profilePanel.setVisible(false);
 
+        this.continueBtn.setText("Save Template");
+        this.continueBtn.setActionCommand("SAVE_TEMPLATE");
+        this.editProfileBtn.setVisible(false);
+
         BufferedImage bufferedImage = template.getTemplateImage();
-        BufferedImage scaledImage = new BufferedImage(600, 300, bufferedImage.getType()); //ToDo: müsste aus Profil geladen werden
+        BufferedImage scaledImage = new BufferedImage(
+                this.currentProfile.getWidth() * 10, this.currentProfile.getHeight() * 10, bufferedImage.getType());
 
         Graphics2D g2d = scaledImage.createGraphics();
-        g2d.drawImage(bufferedImage, 0, 0, 600, 300, null);
+        g2d.drawImage(bufferedImage, 0, 0, this.currentProfile.getWidth() * 10, this.currentProfile.getHeight() * 10, null);
         g2d.dispose();
 
         ImageIcon imageIcon = new ImageIcon(scaledImage);
         templateLabel.setIcon(imageIcon);
+        templateLabel.setHorizontalAlignment(JLabel.CENTER);
 
         this.revalidate();
         this.repaint();
+    }
+
+    public void showTemplateGeneratedConfirmation() {
+        this.continueBtn.setText("Finish");
+        this.continueBtn.setActionCommand("FINISH_TEMPLATE_GENERATION");
+        this.templateLabel.setVisible(false);
+
+        this.confirmationLabel.setText("Yeah, Template saved successfully.\n Have fun!");
+        this.confirmationLabel.setFont(FontEnum.BOLD.getFont());
+        getContentPane().add(confirmationLabel, BorderLayout.CENTER);
+        this.confirmationLabel.setHorizontalAlignment(JLabel.CENTER);
     }
 }
 
