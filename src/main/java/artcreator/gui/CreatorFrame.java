@@ -73,6 +73,7 @@ public class CreatorFrame extends JFrame implements Observer {
         if (newState == S.LOAD_IMAGE) {
             // Logic to update the view when IMAGE_LOADED state is reached
         }
+
         if (newState == S.IMAGE_LOADED) {
             Image currentImage = creator.getCurrentImage();
             if (currentImage != null) {
@@ -82,6 +83,7 @@ public class CreatorFrame extends JFrame implements Observer {
                 System.out.println("No image selected or failed to load the image.");
             }
         }
+
         if (newState == S.PROFILE_LOADED) {
             Profile currentProfile = creator.getCurrentProfile();
             if (currentProfile != null) {
@@ -91,6 +93,7 @@ public class CreatorFrame extends JFrame implements Observer {
                 System.out.println("No profile selected or failed to load the profile.");
             }
         }
+
         if (newState == S.TEMPLATE_GENERATED) {
             Template currentTemplate = creator.getCurrentTemplate();
             if (currentTemplate != null) {
@@ -100,6 +103,7 @@ public class CreatorFrame extends JFrame implements Observer {
                 System.out.println("Failed to generate template.");
             }
         }
+
         if (newState == S.TEMPLATE_SAVED) {
             if (creator.getTemplateSaved()) {
                 System.out.println("Template saved successfully.");

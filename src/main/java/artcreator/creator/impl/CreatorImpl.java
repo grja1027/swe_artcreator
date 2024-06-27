@@ -53,12 +53,6 @@ public class CreatorImpl implements Creator {
         // Load profile from AllProfiles using the provided id
         Profile profile = AllProfiles.getProfile(id);
 
-        if (profile != null) {
-            System.out.println("Profile loaded: " + profile);
-        } else {
-            System.out.println("Profile with ID " + id + " not found.");
-        }
-
         this.currentProfile = profile;
     }
 
